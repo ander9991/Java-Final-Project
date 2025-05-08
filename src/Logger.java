@@ -1,19 +1,23 @@
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-// Logger.java
-class Logger {
-    private static final Path logFile = Paths.get(System.getProperty("user.home"), "backup.log");
+public class Logger {
+    private static final Path LOG_FILE =
+        Paths.get(System.getProperty("user.home"), "backup.log");
+    private static final DateTimeFormatter FMT =
+        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
     public static synchronized void log(String msg) {
-        String time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        String line = String.format("[%s] %s%n", time, msg);
+        String timestamp = LocalDateTime.now().format(FMT);
+        String line = String.format("[%s] %s%n", timestamp, msg);
         try {
-            Files.write(logFile, line.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-        } catch (IOException ignored) {}
+            Files.write(LOG_FILE, line.getBytes(),
+                        StandardOpenOption.CREATE,
+                        StandardOpenOption.APPEND);
+        } catch (IOException e) {
+            System.err.println("Logger failed: " + e.getMessage());
+        }
     }
 }
