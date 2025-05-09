@@ -16,11 +16,20 @@ public class BackupJob {
         this.backupDir = backupDir;
     }
 
-    public File getSource() { return source; }
-    public File getBackupDir() { return backupDir; }
-    public LocalDateTime getLastBackup() { return lastBackup; }
+    
+    public File getSource() { 
+    	return source; 
+    }
+    
+    public File getBackupDir() { 
+    	return backupDir; 
+    }
+    
+    public LocalDateTime getLastBackup() {
+    	return lastBackup;
+    }
 
-    /** Perform one immediate backup and record the timestamp. */
+    
     public void backupNow() {
         try {
             Path targetRoot = backupDir.toPath().resolve(source.getName());
@@ -36,23 +45,20 @@ public class BackupJob {
         }
     }
 
-    /** Schedule recurring backups every N minutes. */
+
     public void scheduleBackup(int intervalMinutes) {
         scheduledTask = scheduler.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
                 backupNow();
-            }
-        }, intervalMinutes, intervalMinutes, TimeUnit.MINUTES);
+            }}, intervalMinutes, intervalMinutes, TimeUnit.MINUTES);
     }
 
-    /** Cancel the recurring schedule (if any). */
     public void cancelSchedule() {
         if (scheduledTask != null) scheduledTask.cancel(true);
         scheduler.shutdownNow();
     }
 
-    /** Restore from the backup folder back to the original location. */
     public void restoreNow() {
         try {
             Path src = backupDir.toPath().resolve(source.getName());

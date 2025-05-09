@@ -12,8 +12,7 @@ public class RestoreService {
             for (File f : chooser.getSelectedFiles()) {
                 try {
                     Path src = f.toPath();
-                    Path dest = Paths.get(System.getProperty("user.home"))
-                                     .resolve(f.getName());
+                    Path dest = Paths.get(System.getProperty("user.home")).resolve(f.getName());
                     if (Files.isDirectory(src)) {
                         BackupService.copyDirectory(src, dest);
                     } else {
@@ -21,8 +20,7 @@ public class RestoreService {
                     }
                     Logger.log("Restored: " + src.toString());
                 } catch (IOException ex) {
-                    Logger.log("Error restoring " + f.getAbsolutePath()
-                               + ": " + ex.getMessage());
+                    Logger.log("Error restoring " + f.getAbsolutePath() + ": " + ex.getMessage());
                 }
             }
         }

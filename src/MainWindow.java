@@ -20,10 +20,8 @@ public class MainWindow extends JFrame {
     private final JComboBox<String> logSelector = new JComboBox<>();
     private final JButton clearLogBtn = new JButton("Clear Log");
 
-    private static final DateTimeFormatter TABLE_FMT =
-        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-    private static final DateTimeFormatter LOG_FMT =
-        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter TABLE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    private static final DateTimeFormatter LOG_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public MainWindow() {
         super("Backup Job Manager");
@@ -65,16 +63,15 @@ public class MainWindow extends JFrame {
         addJobBtn.addActionListener(e -> new AddJobDialog(this).setVisible(true));
         logSelector.addActionListener(e -> {
             String jobName = (String) logSelector.getSelectedItem();
-            if (jobName != null) updateLogView(jobName);
+            if (jobName != null) {
+            	updateLogView(jobName);
+            }
         });
         clearLogBtn.addActionListener(e -> {
             String jobName = (String) logSelector.getSelectedItem();
             if (jobName != null) {
                 try {
-                    Files.newBufferedWriter(getLogPath(jobName),
-                        StandardOpenOption.CREATE,
-                        StandardOpenOption.TRUNCATE_EXISTING
-                    ).close();
+                    Files.newBufferedWriter(getLogPath(jobName), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING).close();
                     logArea.setText("");
                     statusLabel.setText("Log cleared for " + jobName);
                 } catch (IOException ex) {
@@ -94,7 +91,9 @@ public class MainWindow extends JFrame {
         String jobName = job.getSource().getName();
         try {
             Path p = getLogPath(jobName);
-            if (!Files.exists(p)) Files.createFile(p);
+            if (!Files.exists(p)) {
+            	Files.createFile(p);
+            }
         } catch (IOException ignored) {}
 
         logSelector.addItem(jobName);
@@ -104,10 +103,7 @@ public class MainWindow extends JFrame {
             job.backupNow();
             tableModel.fireTableCellUpdated(row, 2);
             appendToJobLog(jobName,
-                String.format("%s Backed up to %s",
-                    job.getLastBackup().format(LOG_FMT),
-                    job.getBackupDir().getAbsolutePath()
-                )
+                String.format("%s Backed up to %s", job.getLastBackup().format(LOG_FMT), job.getBackupDir().getAbsolutePath())
             );
             statusLabel.setText(String.format(
                 "%s backed up to folder %s",
@@ -139,9 +135,7 @@ public class MainWindow extends JFrame {
     private void appendToJobLog(String jobName, String line) {
         try {
             Path p = getLogPath(jobName);
-            Files.write(p, (line + "\n").getBytes(),
-                        StandardOpenOption.CREATE,
-                        StandardOpenOption.APPEND);
+            Files.write(p, (line + "\n").getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
         } catch (IOException ignored) {}
     }
 
@@ -155,13 +149,30 @@ public class MainWindow extends JFrame {
         return Paths.get(job.getSource().getParent(), jobName + ".log");
     }
 
-    // ----- Table Model -----
+    // Table Model
     private class JobTableModel extends AbstractTableModel {
         private final String[] cols = { "File", "Backup Folder", "Last Backup", "Actions" };
-        @Override public int getRowCount() { return jobs.size(); }
-        @Override public int getColumnCount() { return cols.length; }
-        @Override public String getColumnName(int c) { return cols[c]; }
-        @Override public boolean isCellEditable(int r, int c) { return c == 3; }
+        
+        @Override 
+        public int getRowCount() { 
+        	return jobs.size(); 
+        }
+        
+        @Override 
+        public int getColumnCount() { 
+        	return cols.length; 
+        }
+        
+        @Override 
+        public String getColumnName(int c) { 
+        	return cols[c]; 
+        }
+        
+        @Override 
+        public boolean isCellEditable(int r, int c) { 
+        	return c == 3; 
+        }
+        
         @Override
         public Object getValueAt(int r, int c) {
             BackupJob job = jobs.get(r);
@@ -169,21 +180,20 @@ public class MainWindow extends JFrame {
                 case 0: return job.getSource().getAbsolutePath();
                 case 1: return job.getBackupDir().getAbsolutePath();
                 case 2:
-                    return job.getLastBackup() == null
-                        ? ""
-                        : job.getLastBackup().format(TABLE_FMT);
+                    return job.getLastBackup() == null ? "" : job.getLastBackup().format(TABLE_FMT);
                 default: return "Actions";
             }
         }
     }
 
-    // ----- Button Renderer -----
+
     private class ButtonRenderer extends JPanel implements TableCellRenderer {
-        ButtonRenderer() { super(new FlowLayout(FlowLayout.LEFT,5,0)); }
+        ButtonRenderer() { 
+        	super(new FlowLayout(FlowLayout.LEFT,5,0)); 
+        }
+        
         @Override
-        public Component getTableCellRendererComponent(JTable tbl, Object val,
-                                                       boolean sel, boolean foc,
-                                                       int row, int col) {
+        public Component getTableCellRendererComponent(JTable tbl, Object val, boolean sel, boolean foc, int row, int col) {
             removeAll();
             add(new JButton("Restore"));
             add(new JButton("Delete"));
@@ -191,7 +201,6 @@ public class MainWindow extends JFrame {
         }
     }
 
-    // ----- Button Editor -----
     private class ButtonEditor extends AbstractCellEditor implements TableCellEditor {
         private final JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT,5,0));
         private final JButton restoreBtn = new JButton("Restore");
@@ -204,8 +213,7 @@ public class MainWindow extends JFrame {
 
             restoreBtn.addActionListener(e -> {
                 BackupJob job = jobs.get(currentRow);
-                Path backupPath = job.getBackupDir().toPath()
-                                     .resolve(job.getSource().getName());
+                Path backupPath = job.getBackupDir().toPath().resolve(job.getSource().getName());
                 if (!Files.exists(backupPath)) {
                     int choice = JOptionPane.showOptionDialog(
                         MainWindow.this,
@@ -240,13 +248,10 @@ public class MainWindow extends JFrame {
                     if (confirm == JOptionPane.YES_OPTION) {
                         job.restoreNow();
                         appendToJobLog(job.getSource().getName(),
-                            String.format("%s Restored to original location",
-                                LocalDateTime.now().format(LOG_FMT))
+                            String.format("%s Restored to original location", LocalDateTime.now().format(LOG_FMT))
                         );
                         statusLabel.setText(String.format(
-                            "%s is restored to folder %s",
-                            job.getSource().getName(),
-                            job.getSource().getParent()
+                            "%s is restored to folder %s", job.getSource().getName(), job.getSource().getParent()
                         ));
                         updateLogView(job.getSource().getName());
                     }
@@ -263,21 +268,22 @@ public class MainWindow extends JFrame {
         }
 
         @Override
-        public Component getTableCellEditorComponent(JTable tbl, Object val,
-                                                     boolean sel, int row, int col) {
+        public Component getTableCellEditorComponent(JTable tbl, Object val, boolean sel, int row, int col) {
             currentRow = row;
             return panel;
         }
-        @Override public Object getCellEditorValue() { return null; }
+        @Override 
+        public Object getCellEditorValue() { 
+        	return null; 
+        }
     }
 
-    // ----- Add-Job Dialog -----
+    // Add-Job Dialog
     private class AddJobDialog extends JDialog {
         private final CardLayout cards = new CardLayout();
         private final JPanel cardPanel = new JPanel(cards);
         private File chosenFile, chosenFolder;
 
-        // Wizard fields:
         private JLabel fileLabel, sourceLabel, pathLabel;
         private JButton nextBtn, backupNowBtn, prevBtn;
         private JCheckBox autoChk;
@@ -305,7 +311,7 @@ public class MainWindow extends JFrame {
             content.add(new JLabel("Step 1: Select file or directory to back up:"), gbc);
 
             gbc.gridy = 1; gbc.gridwidth = 2;
-            fileLabel = new JLabel("⎯ none selected ⎯");
+            fileLabel = new JLabel("- none selected -");
             content.add(fileLabel, gbc);
 
             gbc.gridy = 2; gbc.gridwidth = 2;
@@ -343,23 +349,36 @@ public class MainWindow extends JFrame {
             gbc.insets = new Insets(5,5,5,5);
             gbc.anchor = GridBagConstraints.WEST;
 
-            gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 1;
-            content.add(new JLabel("File to back up:"), gbc);
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.gridwidth = 2;
+            content.add(new JLabel("Step 2: Choose a folder for the file/folder to backup to:"), gbc);
+
+            gbc.gridwidth = 1;
+
+            gbc.gridx = 0;
+            gbc.gridy = 1;
+            content.add(new JLabel("File/folder to back up:"), gbc);
             gbc.gridx = 1;
-            sourceLabel = new JLabel("⎯ none selected ⎯");
+            sourceLabel = new JLabel("- none selected -");
             content.add(sourceLabel, gbc);
 
-            gbc.gridx = 0; gbc.gridy = 1;
+            gbc.gridx = 0;
+            gbc.gridy = 2;
             content.add(new JLabel("Backup folder:"), gbc);
             gbc.gridx = 1;
-            pathLabel = new JLabel("⎯ none selected ⎯");
+            pathLabel = new JLabel("- none selected -");
             content.add(pathLabel, gbc);
 
-            gbc.gridy = 2; gbc.gridwidth = 2;
+            gbc.gridy = 3;
+            gbc.gridwidth = 2;
             JButton chooseFld = new JButton("Choose Folder…");
             content.add(chooseFld, gbc);
 
-            gbc.gridy = 3; gbc.gridwidth = 1; gbc.gridx = 0;
+            
+            gbc.gridwidth = 1;
+            gbc.gridy = 4;
+            gbc.gridx = 0;
             autoChk = new JCheckBox("Enable auto backup (minutes)");
             content.add(autoChk, gbc);
             gbc.gridx = 1;
@@ -377,10 +396,12 @@ public class MainWindow extends JFrame {
                     backupNowBtn.setEnabled(true);
                 }
             });
+            
             autoChk.addActionListener(evt ->
                 intervalSpinner.setEnabled(autoChk.isSelected())
             );
 
+            // Buttons at bottom
             prevBtn = new JButton("Previous");
             backupNowBtn = new JButton("Backup Now");
             backupNowBtn.setEnabled(false);
@@ -390,9 +411,7 @@ public class MainWindow extends JFrame {
 
             prevBtn.addActionListener(evt -> cards.show(cardPanel, "STEP1"));
             backupNowBtn.addActionListener(evt -> {
-                MainWindow.this.addJob(
-                    new BackupJob(chosenFile, chosenFolder),
-                    true,
+                MainWindow.this.addJob(new BackupJob(chosenFile, chosenFolder), true,
                     autoChk.isSelected() ? (Integer) intervalSpinner.getValue() : null
                 );
                 dispose();

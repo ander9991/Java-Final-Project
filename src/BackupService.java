@@ -4,7 +4,6 @@ import java.nio.file.*;
 import java.util.List;
 
 public class BackupService {
-    /** Backup each source file or directory into destDir. */
     public static void backupFiles(List<File> sources, File destDir) {
         for (File src : sources) {
             try {
@@ -21,7 +20,7 @@ public class BackupService {
         }
     }
 
-    /** Recursively copy a directory tree. */
+
     static void copyDirectory(Path src, Path dest) throws IOException {
         Files.walk(src).forEach(path -> {
             try {
@@ -36,10 +35,5 @@ public class BackupService {
                 Logger.log("Copy error: " + e.getMessage());
             }
         });
-    }
-
-    /** Optional stub for network backup—you can fill this in later. */
-    public static void backupFilesOverNetwork(List<File> sources, String host, int port) {
-        // e.g. open a Socket(host, port), stream each file…
     }
 }
